@@ -13,6 +13,7 @@
         android:layout_margin="8dp"
         app:hasNumbers="true"
         app:hasSeconds="true"
+        app:shape="square"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 

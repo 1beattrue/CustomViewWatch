@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="CustomWatchStyle" parent="Theme.AppCompat.Light">
+        <item name="shape">round</item>
         <item name="hasNumbers">true</item>
         <item name="hasSeconds">true</item>
         <item name="backgroundColor">#FFFFFF</item>

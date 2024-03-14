@@ -19,6 +19,7 @@ class CustomWatch @JvmOverloads constructor(
     defStyleRes: Int = 0
 ) : View(context, attrs, defStyleAttr, defStyleRes) {
 
+    private var shape: Shape = Shape.ROUND
     private var hasNumbers: Boolean = false
     private var hasSeconds: Boolean = false
     private var backgroundColor: Int = Color.WHITE
@@ -38,6 +39,11 @@ class CustomWatch @JvmOverloads constructor(
             defStyleRes
         )
 
+        shape = when (typedArray.getInt(R.styleable.CustomWatch_shape, KEY_ROUND_SHAPE)) {
+            KEY_ROUND_SHAPE -> Shape.ROUND
+            KEY_SQUARE_SHAPE -> Shape.SQUARE
+            else -> Shape.ROUND
+        }
         hasNumbers = typedArray.getBoolean(R.styleable.CustomWatch_hasNumbers, false)
         hasSeconds = typedArray.getBoolean(R.styleable.CustomWatch_hasSeconds, false)
         backgroundColor = typedArray.getColor(R.styleable.CustomWatch_backgroundColor, Color.WHITE)
@@ -90,14 +96,27 @@ class CustomWatch @JvmOverloads constructor(
         val cy = side / 2
 
         paint.color = mainColor
-        backgroundRect.set(0f, 0f, side, side)
-        val roundedCorner = side / 8
-        canvas.drawRoundRect(
-            backgroundRect,
-            roundedCorner,
-            roundedCorner,
-            paint
-        )
+        when (shape) {
+            Shape.ROUND -> {
+                canvas.drawCircle(
+                    cx,
+                    cy,
+                    side / 2,
+                    paint
+                )
+            }
+
+            Shape.SQUARE -> {
+                backgroundRect.set(0f, 0f, side, side)
+                val roundedCorner = side / 8
+                canvas.drawRoundRect(
+                    backgroundRect,
+                    roundedCorner,
+                    roundedCorner,
+                    paint
+                )
+            }
+        }
 
         paint.color = backgroundColor
         val dialRadius = (side / 2 * 0.9f)
@@ -212,5 +231,12 @@ class CustomWatch @JvmOverloads constructor(
             val second = calendar.get(Calendar.SECOND)
             return Triple(hour, minute, second)
         }
+
+        enum class Shape {
+            ROUND, SQUARE
+        }
+
+        private const val KEY_ROUND_SHAPE = 0
+        private const val KEY_SQUARE_SHAPE = 1
     }
 }
