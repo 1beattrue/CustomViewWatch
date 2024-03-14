@@ -5,13 +5,12 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
-import android.os.Handler
-import android.os.Looper
 import android.util.AttributeSet
 import android.view.View
 import java.util.Calendar
 import kotlin.math.cos
 import kotlin.math.sin
+import kotlin.properties.Delegates
 
 class CustomWatch @JvmOverloads constructor(
     context: Context,
@@ -31,8 +30,6 @@ class CustomWatch @JvmOverloads constructor(
 
     private val paint = Paint()
 
-    private val handler = Handler(Looper.getMainLooper())
-
     init {
         val typedArray = context.obtainStyledAttributes(
             attrs,
@@ -46,40 +43,55 @@ class CustomWatch @JvmOverloads constructor(
         backgroundColor = typedArray.getColor(R.styleable.CustomWatch_backgroundColor, Color.WHITE)
         mainColor = typedArray.getColor(R.styleable.CustomWatch_mainColor, Color.BLACK)
 
-        val (h, m, s) = getCurrentTime()
-        hour = h
-        minute = m
-        second = s
-
         typedArray.recycle()
-    }
-
-    private val clockRunnable = object : Runnable {
-        override fun run() {
-            val (h, m, s) = getCurrentTime()
-            hour = h
-            minute = m
-            second = s
-
-            invalidate()
-
-            handler.postDelayed(this, 1000)
-        }
     }
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
-        handler.post(clockRunnable)
+        postInvalidateOnAnimation()
+    }
+
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+
+        val widthMode = MeasureSpec.getMode(widthMeasureSpec)
+        val widthSize = MeasureSpec.getSize(widthMeasureSpec)
+        val heightMode = MeasureSpec.getMode(heightMeasureSpec)
+        val heightSize = MeasureSpec.getSize(heightMeasureSpec)
+
+        val size = when {
+            widthMode == MeasureSpec.EXACTLY && heightMode == MeasureSpec.EXACTLY -> minOf(
+                widthSize,
+                heightSize
+            )
+
+            widthMode == MeasureSpec.EXACTLY -> widthSize
+            heightMode == MeasureSpec.EXACTLY -> heightSize
+
+            else -> minOf(widthSize, heightSize)
+        }
+
+        setMeasuredDimension(size, size)
     }
 
     private val backgroundRect = RectF()
+    private var side by Delegates.notNull<Float>()
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
+        val currentTime = getCurrentTime()
+        hour = currentTime.first
+        minute = currentTime.second
+        second = currentTime.third
+
+        side = minOf(width, height).toFloat()
+        val cx = side / 2
+        val cy = side / 2
+
         paint.color = mainColor
-        backgroundRect.set(0f, 0f, width.toFloat(), height.toFloat())
-        val roundedCorner = minOf(width, height) / 8f
+        backgroundRect.set(0f, 0f, side, side)
+        val roundedCorner = side / 8
         canvas.drawRoundRect(
             backgroundRect,
             roundedCorner,
@@ -88,9 +100,7 @@ class CustomWatch @JvmOverloads constructor(
         )
 
         paint.color = backgroundColor
-        val cx = width / 2f
-        val cy = height / 2f
-        val dialRadius = (minOf(width, height) / 2 * 0.9).toFloat()
+        val dialRadius = (side / 2 * 0.9f)
         canvas.drawCircle(
             cx,
             cy,
@@ -107,6 +117,9 @@ class CustomWatch @JvmOverloads constructor(
 
         if (hasSeconds) {
             drawSecondHand(dialRadius, cx, cy, canvas)
+            postInvalidateOnAnimation()
+        } else {
+            postDelayed({ invalidate() }, (60 - second) * 1000L)
         }
     }
 
@@ -118,16 +131,17 @@ class CustomWatch @JvmOverloads constructor(
     ) {
         canvas.save()
 
-        val secondRotation = second * 6f
+        val secondRotation = getSecondRotation()
         canvas.rotate(secondRotation, cx, cy)
 
         paint.color = mainColor
-        paint.strokeWidth = minOf(width, height) / 60f
+        paint.strokeWidth = side / 60
         canvas.drawLine(cx, cy, cx, cy - dialRadius * 0.8f, paint)
 
         canvas.restore()
     }
 
+    private fun getSecondRotation(): Float = second * 6f
 
     private fun drawMinuteHand(
         dialRadius: Float,
@@ -137,16 +151,17 @@ class CustomWatch @JvmOverloads constructor(
     ) {
         canvas.save()
 
-        val minuteRotation = minute * 6f + second / 10f
+        val minuteRotation = getMinuteRotation()
         canvas.rotate(minuteRotation, cx, cy)
 
         paint.color = mainColor
-        paint.strokeWidth = minOf(width, height) / 30f
+        paint.strokeWidth = side / 30f
         canvas.drawLine(cx, cy, cx, cy - dialRadius * 0.6f, paint)
 
         canvas.restore()
     }
 
+    private fun getMinuteRotation(): Float = minute * 6f + second / 10f
 
     private fun drawHourHand(
         dialRadius: Float,
@@ -156,15 +171,17 @@ class CustomWatch @JvmOverloads constructor(
     ) {
         canvas.save()
 
-        val hourRotation = (hour % 12) * 30f + minute / 2f
+        val hourRotation = getHourRotation()
         canvas.rotate(hourRotation, cx, cy)
 
         paint.color = mainColor
-        paint.strokeWidth = minOf(width, height) / 20f
+        paint.strokeWidth = side / 20f
         canvas.drawLine(cx, cy, cx, cy - dialRadius * 0.4f, paint)
 
         canvas.restore()
     }
+
+    private fun getHourRotation(): Float = (hour % 12) * 30f + minute / 2f
 
     private fun drawNumbers(
         dialRadius: Float,
@@ -189,12 +206,11 @@ class CustomWatch @JvmOverloads constructor(
 
     companion object {
         private fun getCurrentTime(): Triple<Int, Int, Int> {
-            val cal = Calendar.getInstance()
-            val hour = cal.get(Calendar.HOUR)
-            val minute = cal.get(Calendar.MINUTE)
-            val second = cal.get(Calendar.SECOND)
+            val calendar = Calendar.getInstance()
+            val hour = calendar.get(Calendar.HOUR)
+            val minute = calendar.get(Calendar.MINUTE)
+            val second = calendar.get(Calendar.SECOND)
             return Triple(hour, minute, second)
         }
     }
 }
-
