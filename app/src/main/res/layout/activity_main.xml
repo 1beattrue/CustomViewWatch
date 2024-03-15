@@ -49,7 +49,7 @@
 
     <edu.mirea.onebeattrue.customviewwatch.CustomWatch
         android:layout_width="256dp"
-        android:layout_height="128dp"
+        android:layout_height="512dp"
         app:backgroundColor="@color/vk_color"
         app:hasNumbers="true"
         app:hasSeconds="true"

@@ -32,24 +32,26 @@ class CustomWatch @JvmOverloads constructor(
     private val paint = Paint()
 
     init {
-        val typedArray = context.obtainStyledAttributes(
+        context.obtainStyledAttributes(
             attrs,
             R.styleable.CustomWatch,
             defStyleAttr,
             defStyleRes
-        )
-
-        shape = when (typedArray.getInt(R.styleable.CustomWatch_shape, KEY_ROUND_SHAPE)) {
-            KEY_ROUND_SHAPE -> Shape.ROUND
-            KEY_SQUARE_SHAPE -> Shape.SQUARE
-            else -> Shape.ROUND
+        ).apply {
+            try {
+                shape = when (getInt(R.styleable.CustomWatch_shape, KEY_ROUND_SHAPE)) {
+                    KEY_ROUND_SHAPE -> Shape.ROUND
+                    KEY_SQUARE_SHAPE -> Shape.SQUARE
+                    else -> Shape.ROUND
+                }
+                hasNumbers = getBoolean(R.styleable.CustomWatch_hasNumbers, false)
+                hasSeconds = getBoolean(R.styleable.CustomWatch_hasSeconds, false)
+                backgroundColor = getColor(R.styleable.CustomWatch_backgroundColor, Color.WHITE)
+                mainColor = getColor(R.styleable.CustomWatch_mainColor, Color.BLACK)
+            } finally {
+                recycle()
+            }
         }
-        hasNumbers = typedArray.getBoolean(R.styleable.CustomWatch_hasNumbers, false)
-        hasSeconds = typedArray.getBoolean(R.styleable.CustomWatch_hasSeconds, false)
-        backgroundColor = typedArray.getColor(R.styleable.CustomWatch_backgroundColor, Color.WHITE)
-        mainColor = typedArray.getColor(R.styleable.CustomWatch_mainColor, Color.BLACK)
-
-        typedArray.recycle()
     }
 
     override fun onAttachedToWindow() {
@@ -95,6 +97,48 @@ class CustomWatch @JvmOverloads constructor(
         val cx = side / 2
         val cy = side / 2
 
+        drawBackground(cx, cy, canvas)
+
+        val dialRadius = (side / 2 * 0.9f)
+        drawDial(dialRadius, cx, cy, canvas)
+
+        if (hasNumbers) {
+            drawNumbers(dialRadius, cx, cy, canvas)
+        }
+
+        drawHourHand(dialRadius, cx, cy, canvas)
+        drawMinuteHand(dialRadius, cx, cy, canvas)
+
+        if (hasSeconds) {
+            drawSecondHand(dialRadius, cx, cy, canvas)
+            postInvalidateOnAnimation()
+        } else {
+            postDelayed({ invalidate() }, (60 - second) * 1000L)
+        }
+    }
+
+    private fun drawDial(
+        dialRadius: Float,
+        cx: Float,
+        cy: Float,
+        canvas: Canvas
+    ) {
+        paint.reset()
+        paint.color = backgroundColor
+        canvas.drawCircle(
+            cx,
+            cy,
+            dialRadius,
+            paint
+        )
+    }
+
+    private fun drawBackground(
+        cx: Float,
+        cy: Float,
+        canvas: Canvas
+    ) {
+        paint.reset()
         paint.color = mainColor
         when (shape) {
             Shape.ROUND -> {
@@ -117,29 +161,6 @@ class CustomWatch @JvmOverloads constructor(
                 )
             }
         }
-
-        paint.color = backgroundColor
-        val dialRadius = (side / 2 * 0.9f)
-        canvas.drawCircle(
-            cx,
-            cy,
-            dialRadius,
-            paint
-        )
-
-        if (hasNumbers) {
-            drawNumbers(dialRadius, cx, cy, canvas)
-        }
-
-        drawHourHand(dialRadius, cx, cy, canvas)
-        drawMinuteHand(dialRadius, cx, cy, canvas)
-
-        if (hasSeconds) {
-            drawSecondHand(dialRadius, cx, cy, canvas)
-            postInvalidateOnAnimation()
-        } else {
-            postDelayed({ invalidate() }, (60 - second) * 1000L)
-        }
     }
 
     private fun drawSecondHand(
@@ -148,6 +169,7 @@ class CustomWatch @JvmOverloads constructor(
         cy: Float,
         canvas: Canvas
     ) {
+        paint.reset()
         canvas.save()
 
         val secondRotation = getSecondRotation()
@@ -168,6 +190,7 @@ class CustomWatch @JvmOverloads constructor(
         cy: Float,
         canvas: Canvas
     ) {
+        paint.reset()
         canvas.save()
 
         val minuteRotation = getMinuteRotation()
@@ -188,6 +211,7 @@ class CustomWatch @JvmOverloads constructor(
         cy: Float,
         canvas: Canvas
     ) {
+        paint.reset()
         canvas.save()
 
         val hourRotation = getHourRotation()
@@ -208,6 +232,7 @@ class CustomWatch @JvmOverloads constructor(
         cy: Float,
         canvas: Canvas
     ) {
+        paint.reset()
         paint.color = mainColor
         val textSize = dialRadius / 5
         paint.textSize = textSize
