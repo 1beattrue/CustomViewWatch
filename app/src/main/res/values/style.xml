@@ -4,7 +4,7 @@
         <item name="shape">round</item>
         <item name="hasNumbers">true</item>
         <item name="hasSeconds">true</item>
-        <item name="backgroundColor">#FFFFFF</item>
+        <item name="dialColor">#FFFFFF</item>
         <item name="mainColor">#000000</item>
     </style>
 </resources>

@@ -25,14 +25,16 @@
         app:hasSeconds="false"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:mainColor="@color/black" />
+        app:mainColor="@color/vk_color" />
 
     <edu.mirea.onebeattrue.customviewwatch.CustomWatch
+        app:dialColor="@color/red"
+        app:shape="square"
         android:layout_width="128dp"
         android:layout_height="128dp"
         android:layout_margin="8dp"
-        app:hasNumbers="false"
-        app:hasSeconds="false"
+        app:hasSeconds="true"
+        app:secondHandColor="@color/black"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:mainColor="@color/vk_color" />
@@ -41,7 +43,7 @@
         android:layout_width="128dp"
         android:layout_height="128dp"
         android:layout_margin="8dp"
-        app:hasNumbers="false"
+        app:hasNumbers="true"
         app:hasSeconds="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -50,13 +52,9 @@
     <edu.mirea.onebeattrue.customviewwatch.CustomWatch
         android:layout_width="256dp"
         android:layout_height="512dp"
-        app:backgroundColor="@color/vk_color"
-        app:hasNumbers="true"
-        app:hasSeconds="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:mainColor="@color/red" />
+        app:layout_constraintTop_toTopOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

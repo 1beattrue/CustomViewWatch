@@ -22,8 +22,9 @@ class CustomWatch @JvmOverloads constructor(
     private var shape: Shape = Shape.ROUND
     private var hasNumbers: Boolean = false
     private var hasSeconds: Boolean = false
-    private var backgroundColor: Int = Color.WHITE
+    private var dialColor: Int = Color.WHITE
     private var mainColor: Int = Color.BLACK
+    private var secondHandColor: Int = Color.RED
 
     private var hour: Int = 0
     private var minute: Int = 0
@@ -46,8 +47,9 @@ class CustomWatch @JvmOverloads constructor(
                 }
                 hasNumbers = getBoolean(R.styleable.CustomWatch_hasNumbers, false)
                 hasSeconds = getBoolean(R.styleable.CustomWatch_hasSeconds, false)
-                backgroundColor = getColor(R.styleable.CustomWatch_backgroundColor, Color.WHITE)
+                dialColor = getColor(R.styleable.CustomWatch_dialColor, Color.WHITE)
                 mainColor = getColor(R.styleable.CustomWatch_mainColor, Color.BLACK)
+                secondHandColor = getColor(R.styleable.CustomWatch_secondHandColor, Color.RED)
             } finally {
                 recycle()
             }
@@ -126,7 +128,7 @@ class CustomWatch @JvmOverloads constructor(
         canvas: Canvas
     ) {
         paint.reset()
-        paint.color = backgroundColor
+        paint.color = dialColor
         canvas.drawCircle(cx, cy, dialRadius, paint)
 
         paint.color = mainColor
@@ -178,7 +180,7 @@ class CustomWatch @JvmOverloads constructor(
         val secondRotation = getSecondRotation()
         canvas.rotate(secondRotation, cx, cy)
 
-        paint.color = mainColor
+        paint.color = secondHandColor
         rectF.set(
             cx + centerRadius / 4,
             cy + 2 * centerRadius,
