@@ -82,7 +82,7 @@ class CustomWatch @JvmOverloads constructor(
         setMeasuredDimension(size, size)
     }
 
-    private val backgroundRect = RectF()
+    private val rectF = RectF()
     private var side by Delegates.notNull<Float>()
 
     override fun onDraw(canvas: Canvas) {
@@ -100,17 +100,18 @@ class CustomWatch @JvmOverloads constructor(
         drawBackground(cx, cy, canvas)
 
         val dialRadius = (side / 2 * 0.9f)
-        drawDial(dialRadius, cx, cy, canvas)
+        val centerRadius = dialRadius / 20
+        drawDial(dialRadius, centerRadius, cx, cy, canvas)
 
         if (hasNumbers) {
             drawNumbers(dialRadius, cx, cy, canvas)
         }
 
-        drawHourHand(dialRadius, cx, cy, canvas)
-        drawMinuteHand(dialRadius, cx, cy, canvas)
+        drawHourHand(dialRadius, centerRadius, cx, cy, canvas)
+        drawMinuteHand(dialRadius, centerRadius, cx, cy, canvas)
 
         if (hasSeconds) {
-            drawSecondHand(dialRadius, cx, cy, canvas)
+            drawSecondHand(dialRadius, centerRadius, cx, cy, canvas)
             postInvalidateOnAnimation()
         } else {
             postDelayed({ invalidate() }, (60 - second) * 1000L)
@@ -119,18 +120,19 @@ class CustomWatch @JvmOverloads constructor(
 
     private fun drawDial(
         dialRadius: Float,
+        centerRadius: Float,
         cx: Float,
         cy: Float,
         canvas: Canvas
     ) {
         paint.reset()
         paint.color = backgroundColor
-        canvas.drawCircle(
-            cx,
-            cy,
-            dialRadius,
-            paint
-        )
+        canvas.drawCircle(cx, cy, dialRadius, paint)
+
+        paint.color = mainColor
+        paint.style = Paint.Style.STROKE
+        paint.strokeWidth = dialRadius / 30
+        canvas.drawCircle(cx, cy, centerRadius, paint)
     }
 
     private fun drawBackground(
@@ -151,10 +153,10 @@ class CustomWatch @JvmOverloads constructor(
             }
 
             Shape.SQUARE -> {
-                backgroundRect.set(0f, 0f, side, side)
+                rectF.set(0f, 0f, side, side)
                 val roundedCorner = side / 8
                 canvas.drawRoundRect(
-                    backgroundRect,
+                    rectF,
                     roundedCorner,
                     roundedCorner,
                     paint
@@ -165,6 +167,7 @@ class CustomWatch @JvmOverloads constructor(
 
     private fun drawSecondHand(
         dialRadius: Float,
+        centerRadius: Float,
         cx: Float,
         cy: Float,
         canvas: Canvas
@@ -176,8 +179,19 @@ class CustomWatch @JvmOverloads constructor(
         canvas.rotate(secondRotation, cx, cy)
 
         paint.color = mainColor
-        paint.strokeWidth = side / 60
-        canvas.drawLine(cx, cy, cx, cy - dialRadius * 0.8f, paint)
+        rectF.set(
+            cx + centerRadius / 4,
+            cy + 2 * centerRadius,
+            cx - centerRadius / 4,
+            cy - dialRadius * 0.9f
+        )
+        val roundedCorner = side / 32
+        canvas.drawRoundRect(
+            rectF,
+            roundedCorner,
+            roundedCorner,
+            paint
+        )
 
         canvas.restore()
     }
@@ -186,6 +200,7 @@ class CustomWatch @JvmOverloads constructor(
 
     private fun drawMinuteHand(
         dialRadius: Float,
+        centerRadius: Float,
         cx: Float,
         cy: Float,
         canvas: Canvas
@@ -197,8 +212,19 @@ class CustomWatch @JvmOverloads constructor(
         canvas.rotate(minuteRotation, cx, cy)
 
         paint.color = mainColor
-        paint.strokeWidth = side / 30f
-        canvas.drawLine(cx, cy, cx, cy - dialRadius * 0.6f, paint)
+        rectF.set(
+            cx + centerRadius * 0.5f,
+            cy - centerRadius,
+            cx - centerRadius * 0.5f,
+            cy - dialRadius * 0.7f
+        )
+        val roundedCorner = side / 32
+        canvas.drawRoundRect(
+            rectF,
+            roundedCorner,
+            roundedCorner,
+            paint
+        )
 
         canvas.restore()
     }
@@ -207,6 +233,7 @@ class CustomWatch @JvmOverloads constructor(
 
     private fun drawHourHand(
         dialRadius: Float,
+        centerRadius: Float,
         cx: Float,
         cy: Float,
         canvas: Canvas
@@ -218,8 +245,19 @@ class CustomWatch @JvmOverloads constructor(
         canvas.rotate(hourRotation, cx, cy)
 
         paint.color = mainColor
-        paint.strokeWidth = side / 20f
-        canvas.drawLine(cx, cy, cx, cy - dialRadius * 0.4f, paint)
+        rectF.set(
+            cx + centerRadius * 0.7f,
+            cy - centerRadius,
+            cx - centerRadius * 0.7f,
+            cy - dialRadius * 0.5f
+        )
+        val roundedCorner = side / 32
+        canvas.drawRoundRect(
+            rectF,
+            roundedCorner,
+            roundedCorner,
+            paint
+        )
 
         canvas.restore()
     }
